@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #!/usr/bin/env bash
 #################################################
 # Please do not make any changes to this file,  #
@@ -14,6 +16,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         source "$SCRIPT_DIR"/webui-macos-env.sh
     fi
 fi
+
 
 # Read variables from webui-user.sh
 # shellcheck source=/dev/null

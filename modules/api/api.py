@@ -32,6 +32,7 @@ import piexif
 import piexif.helper
 from contextlib import closing
 
+from fastapi.exceptions import RequestValidationError
 
 def script_name_to_index(name, scripts):
     try:
@@ -164,6 +165,7 @@ def api_middleware(app: FastAPI):
             ))
         return res
 
+    # 既存のエラーハンドリング関数を修正
     def handle_exception(request: Request, e: Exception):
         err = {
             "error": type(e).__name__,
@@ -171,6 +173,22 @@ def api_middleware(app: FastAPI):
             "body": vars(e).get('body', ''),
             "errors": str(e),
         }
+        # body = await request.body()
+
+        print('eerrorrrrrrrrrrrrrrrrrrr')
+        log_details = {
+            "path": request.url.path,
+            "method": request.method,
+            # "body": body.decode(),
+            "errors": err,
+        }
+        print(f"Request validation error: {log_details}")
+
+        # RequestValidationErrorの詳細をログに記録
+        if isinstance(e, RequestValidationError):
+            err['validation_errors'] = e.errors()
+            print(f"Validation error: {err['validation_errors']}")
+
         if not isinstance(e, HTTPException):  # do not print backtrace on known httpexceptions
             message = f"API error: {request.method}: {request.url} {err}"
             if rich_available:
@@ -336,6 +354,7 @@ class Api:
         return script_args
 
     def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI):
+        print('eeeeeeeeeeeeeeeeeeeeeeee')
         script_runner = scripts.scripts_txt2img
         if not script_runner.scripts:
             script_runner.initialize_scripts(False)
@@ -386,6 +405,7 @@ class Api:
         return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
 
     def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
+        print('o,,,,,,,,,,,,,,,,,,,,,,')
         init_images = img2imgreq.init_images
         if init_images is None:
             raise HTTPException(status_code=404, detail="Init image not found")
